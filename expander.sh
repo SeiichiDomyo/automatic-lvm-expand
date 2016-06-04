@@ -1,7 +1,7 @@
 #!/bin/bash
 ###############################################################
 # Code by Jioh L. Jung (ziozzang@gmail.com)
-# enhanced by Seiichi Domyo (seiichi.do@gmail.com)
+# Modified by Seiichi Domyo (seiichi.do@gmail.com)
 ###############################################################
 # Configuration
 # Target Device
@@ -11,13 +11,18 @@ TARGET_DEVICE="/dev/sd?"
 TARGET_VOL_GRP="centos"
 # LVM mountpoint target
 TARGET_VOL_MP="/dev/${TARGET_VOL_GRP}/test"
+# LVM target file format type 
+TARGET_VOL_FT="xfs"
+
+# system mountpoint dir
+SYSTEM_MP_DIR="/data"
 
 # Check if the parted is allready installed
 rpm -qa | grep parted || yum -y install parted
+# Check if the xfsprogs is allready installed
+rpm -qa | grep xfsprogs || yum -y install xfsprogs 
  
 ###############################################################
-# Flag for size change
-SIZE_CHANGED="false"
  
 for disk in ${TARGET_DEVICE}
 do
@@ -61,11 +66,10 @@ do
     	echo "==> Extend Volume Partition to ${TARGET_VOL_MP}"
     	lvextend ${TARGET_VOL_MP} ${disk}1
     fi
-    SIZE_CHANGED="true"
   fi
 done
-if [[ "${SIZE_CHANGED}" == "true" ]]; then
-  echo "==> LVM root will be resize on the fly.."
-  resize2fs ${TARGET_VOL_MP}
-fi
+mkfs -t ${TARGET_VOL_FT} -i size=512 ${TARGET_VOL_MP}
+mkdir ${SYSTEM_MP_DIR} 
+echo "${TARGET_VOL_MP} ${SYSTEM_MP_DIR} ${TARGET_VOL_FT} noatime,inode64 0 0" >>/etc/fstab
+mount ${SYSTEM_MP_DIR}
 echo "==> Done"
