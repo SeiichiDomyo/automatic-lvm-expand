@@ -10,7 +10,7 @@ TARGET_DEVICE="/dev/sd?"
 # LVM group
 TARGET_VOL_GRP="centos"
 # LVM mountpoint target
-TARGET_VOL_MP="/dev/${TARGET_VOL_GRP}/root"
+TARGET_VOL_MP="/dev/${TARGET_VOL_GRP}/test"
 
 # Check if the parted is allready installed
 rpm -qa | grep parted || yum -y install parted
@@ -42,10 +42,25 @@ do
     pvcreate -y -ff ${disk}1
     echo "==> created PV ${disk}1 as LVM Partition"
 
-    echo "==> Extend Volume ${TARGET_VOL_GRP}"
-    vgextend ${TARGET_VOL_GRP} ${disk}1
-    echo "==> Extend Volume Partition to ${TARGET_VOL_MP}"
-    lvextend ${TARGET_VOL_MP} ${disk}1
+    # Check Already Volume Group
+    vgscan | grep ${TARGET_VOL_GRP}
+    if [ $? -ne 0 ]; then
+    	echo "==> Create VG ${TARGET_VOL_GRP}"
+    	vgcreate -y -f ${TARGET_VOL_GRP} ${disk}1 
+    else
+    	echo "==> Extend Volume ${TARGET_VOL_GRP}"
+    	vgextend ${TARGET_VOL_GRP} ${disk}1
+    fi
+
+    # Check Already Logical Volume
+    lvscan | grep ${TARGET_VOL_MP}
+    if [ $? -ne 0 ]; then
+    	echo "==> Create LV ${TARGET_VOL_MP}"
+   	lvcreate -n ${TARGET_VOL_MP} -l 100%FREE ${TARGET_VOL_GRP}
+    else
+    	echo "==> Extend Volume Partition to ${TARGET_VOL_MP}"
+    	lvextend ${TARGET_VOL_MP} ${disk}1
+    fi
     SIZE_CHANGED="true"
   fi
 done
