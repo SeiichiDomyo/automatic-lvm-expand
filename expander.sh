@@ -8,9 +8,9 @@
 # - Raw disk device. you can specify one device or use wildcard
 TARGET_DEVICE="/dev/sd?"
 # LVM group
-TARGET_VOL_GRP="VolGroup"
+TARGET_VOL_GRP="centos"
 # LVM mountpoint target
-TARGET_VOL_MP="/dev/${TARGET_VOL_GRP}/lv_root"
+TARGET_VOL_MP="/dev/${TARGET_VOL_GRP}/root"
 
 # Check if the parted is allready installed
 rpm -qa | grep parted || yum -y install parted
@@ -39,7 +39,9 @@ do
     echo "==> set partition $partno to type: lvm "
     parted $disk set 1 lvm on
     partprobe > /dev/null 2>&1
+    pvcreate -y -ff ${disk}1
     echo "==> created PV ${disk}1 as LVM Partition"
+
     echo "==> Extend Volume ${TARGET_VOL_GRP}"
     vgextend ${TARGET_VOL_GRP} ${disk}1
     echo "==> Extend Volume Partition to ${TARGET_VOL_MP}"
