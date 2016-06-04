@@ -13,7 +13,6 @@ TARGET_VOL_GRP="centos"
 TARGET_VOL_MP="/dev/${TARGET_VOL_GRP}/test"
 # LVM target file format type 
 TARGET_VOL_FT="xfs"
-
 # system mountpoint dir
 SYSTEM_MP_DIR="/data"
 
@@ -26,9 +25,10 @@ rpm -qa | grep xfsprogs || yum -y install xfsprogs
  
 for disk in ${TARGET_DEVICE}
 do
+  target_disk=${disk}1
   # Check Already Partioned
-  if [[ -e ${disk}1 ]]; then
-    echo "==> ${disk}1 partition already exist"
+  if [[ -e ${target_disk} ]]; then
+    echo "==> ${target_disk} partition already exist"
     continue
   else
     echo "==> ${disk} is not partioned"
@@ -44,27 +44,27 @@ do
     echo "==> set partition $partno to type: lvm "
     parted $disk set 1 lvm on
     partprobe > /dev/null 2>&1
-    pvcreate -y -ff ${disk}1
-    echo "==> created PV ${disk}1 as LVM Partition"
+    pvcreate -y -ff ${target_disk}
+    echo "==> created PV ${target_disk} as LVM Partition"
 
     # Check Already Volume Group
     vgscan | grep ${TARGET_VOL_GRP}
     if [ $? -ne 0 ]; then
     	echo "==> Create VG ${TARGET_VOL_GRP}"
-    	vgcreate -y -f ${TARGET_VOL_GRP} ${disk}1 
+        vgcreate -y -f ${TARGET_VOL_GRP} ${target_disk} 
     else
-    	echo "==> Extend Volume ${TARGET_VOL_GRP}"
-    	vgextend ${TARGET_VOL_GRP} ${disk}1
+        echo "==> Extend Volume ${TARGET_VOL_GRP}"
+        vgextend ${TARGET_VOL_GRP} ${target_disk}
     fi
 
     # Check Already Logical Volume
     lvscan | grep ${TARGET_VOL_MP}
     if [ $? -ne 0 ]; then
-    	echo "==> Create LV ${TARGET_VOL_MP}"
-   	lvcreate -n ${TARGET_VOL_MP} -l 100%FREE ${TARGET_VOL_GRP}
+        echo "==> Create LV ${TARGET_VOL_MP}"
+        lvcreate -n ${TARGET_VOL_MP} -l 100%FREE ${TARGET_VOL_GRP}
     else
-    	echo "==> Extend Volume Partition to ${TARGET_VOL_MP}"
-    	lvextend ${TARGET_VOL_MP} ${disk}1
+        echo "==> Extend Volume Partition to ${TARGET_VOL_MP}"
+        lvextend ${TARGET_VOL_MP} ${target_disk}
     fi
   fi
 done
