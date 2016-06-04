@@ -1,6 +1,7 @@
 #!/bin/bash
 ###############################################################
 # Code by Jioh L. Jung (ziozzang@gmail.com)
+# enhanced by Seiichi Domyo (seiichi.do@gmail.com)
 ###############################################################
 # Configuration
 # Target Device
@@ -9,7 +10,7 @@ TARGET_DEVICE="/dev/sd?"
 # LVM group
 TARGET_VOL_GRP="VolGroup"
 # LVM mountpoint target
-TARGET_VOL_MP="/dev/VolGroup/lv_root"
+TARGET_VOL_MP="/dev/${TARGET_VOL_GRP}/lv_root"
  
 ###############################################################
 # Flag for size change
