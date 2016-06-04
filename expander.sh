@@ -11,6 +11,9 @@ TARGET_DEVICE="/dev/sd?"
 TARGET_VOL_GRP="VolGroup"
 # LVM mountpoint target
 TARGET_VOL_MP="/dev/${TARGET_VOL_GRP}/lv_root"
+
+# Check if the parted is allready installed
+rpm -qa | grep parted || yum -y install parted
  
 ###############################################################
 # Flag for size change
