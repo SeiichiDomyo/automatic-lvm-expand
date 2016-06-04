@@ -8,19 +8,9 @@
 # - Raw disk device. you can specify one device or use wildcard
 TARGET_DEVICE="/dev/sd?"
 # LVM group
-TARGET_VOL_GRP="centos"
+echo ${TARGET_VOL_GRP:=VolGroup} > /dev/null
 # LVM mountpoint target
-TARGET_VOL_MP="/dev/${TARGET_VOL_GRP}/test"
-# LVM target file format type 
-TARGET_VOL_FT="xfs"
-# system mountpoint dir
-SYSTEM_MP_DIR="/data"
-
-# Check if the parted is allready installed
-rpm -qa | grep parted || yum -y install parted
-# Check if the xfsprogs is allready installed
-rpm -qa | grep xfsprogs || yum -y install xfsprogs 
- 
+echo ${TARGET_VOL_MP:=/dev/VolGroup/lv_root} > /dev/null
 ###############################################################
  
 for disk in ${TARGET_DEVICE}
@@ -68,8 +58,4 @@ do
     fi
   fi
 done
-mkfs -t ${TARGET_VOL_FT} -i size=512 ${TARGET_VOL_MP}
-mkdir ${SYSTEM_MP_DIR} 
-echo "${TARGET_VOL_MP} ${SYSTEM_MP_DIR} ${TARGET_VOL_FT} noatime,inode64 0 0" >>/etc/fstab
-mount ${SYSTEM_MP_DIR}
 echo "==> Done"
