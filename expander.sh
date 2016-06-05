@@ -1,7 +1,7 @@
 #!/bin/bash
 ###############################################################
 # Code by Jioh L. Jung (ziozzang@gmail.com)
-# Modified by Seiichi Domyo (seiichi.do@gmail.com)
+# Modified by Seiichi Domyo
 ###############################################################
 # Configuration
 # Target Device
@@ -11,7 +11,10 @@ TARGET_DEVICE="/dev/sd?"
 echo ${TARGET_VOL_GRP:=VolGroup} > /dev/null
 # LVM mountpoint target
 echo ${TARGET_VOL_MP:=/dev/VolGroup/lv_root} > /dev/null
+
 ###############################################################
+# Flag for size change
+# SIZE_CHANGED="false"
  
 for disk in ${TARGET_DEVICE}
 do
@@ -40,22 +43,27 @@ do
     # Check Already Volume Group
     vgscan | grep ${TARGET_VOL_GRP}
     if [ $? -ne 0 ]; then
-    	echo "==> Create VG ${TARGET_VOL_GRP}"
-        vgcreate -y -f ${TARGET_VOL_GRP} ${target_disk} 
+      echo "==> Create VG ${TARGET_VOL_GRP}"
+      vgcreate -y -f ${TARGET_VOL_GRP} ${target_disk} 
     else
-        echo "==> Extend Volume ${TARGET_VOL_GRP}"
-        vgextend ${TARGET_VOL_GRP} ${target_disk}
+      echo "==> Extend Volume ${TARGET_VOL_GRP}"
+      vgextend ${TARGET_VOL_GRP} ${target_disk}
     fi
 
     # Check Already Logical Volume
     lvscan | grep ${TARGET_VOL_MP}
     if [ $? -ne 0 ]; then
-        echo "==> Create LV ${TARGET_VOL_MP}"
-        lvcreate -n ${TARGET_VOL_MP} -l 100%FREE ${TARGET_VOL_GRP}
+      echo "==> Create LV ${TARGET_VOL_MP}"
+      lvcreate -n ${TARGET_VOL_MP} -l 100%FREE ${TARGET_VOL_GRP}
     else
-        echo "==> Extend Volume Partition to ${TARGET_VOL_MP}"
-        lvextend ${TARGET_VOL_MP} ${target_disk}
+      echo "==> Extend Volume Partition to ${TARGET_VOL_MP}"
+      lvextend ${TARGET_VOL_MP} ${target_disk}
+    # SIZE_CHANGED="true"
     fi
   fi
 done
+# if [[ "${SIZE_CHANGED}" == "true" ]]; then
+#  echo "==> LVM root will be resize on the fly.."
+#  resize2fs ${TARGET_VOL_MP}
+# fi
 echo "==> Done"
