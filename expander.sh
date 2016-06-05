@@ -6,7 +6,7 @@
 # Configuration
 # Target Device
 # - Raw disk device. you can specify one device or use wildcard
-TARGET_DEVICE="/dev/sd?"
+echo ${TARGET_DEVICE:=/dev/sd?} > /dev/null
 # LVM group
 echo ${TARGET_VOL_GRP:=VolGroup} > /dev/null
 # LVM mountpoint target
