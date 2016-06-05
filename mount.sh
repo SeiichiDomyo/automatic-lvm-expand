@@ -1,7 +1,4 @@
 #!/bin/bash
-###############################################################
-# Code by Seiichi Domyo (seiichi.do@gmail.com)
-###############################################################
 # Configuration
 # LVM mountpoint target
 echo ${TARGET_VOL_MP:=/dev/VolGroup/lv_root} > /dev/null
@@ -11,7 +8,6 @@ echo ${TARGET_VOL_FT:=xfs} > /dev/null
 echo ${SYSTEM_MP_DIR:=/data} > /dev/null
 
 echo "==> Mounting the logical volume into CentOS"
-
 mount | grep ${SYSTEM_MP_DIR} > /dev/null
 if [ $? -ne 0 ]; then
   mkfs -t ${TARGET_VOL_FT} ${TARGET_VOL_MP}
